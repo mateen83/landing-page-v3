@@ -341,15 +341,36 @@ function EmailCaptureSection() {
         setMessage('');
 
         try {
-            const response = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email }),
-            });
+            console.log('Submitting email:', email);
+            
+            // Try the main API first, then fallback to simple API
+            let response;
+            let data;
+            
+            try {
+                response = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email }),
+                });
+                data = await response.json();
+            } catch (mainApiError) {
+                console.log('Main API failed, trying simple API:', mainApiError);
+                
+                // Fallback to simple API
+                response = await fetch('/api/send-email-simple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email }),
+                });
+                data = await response.json();
+            }
 
-            const data = await response.json();
+            console.log('API Response:', { status: response.status, data });
 
             if (response.ok && data.success) {
                 setStatus('success');
@@ -357,9 +378,10 @@ function EmailCaptureSection() {
                 setEmail('');
             } else {
                 setStatus('error');
-                setMessage(data.message || 'Something went wrong. Please try again.');
+                setMessage(data.message || `Server error (${response.status}). Please try again.`);
             }
         } catch (error) {
+            console.error('Network error:', error);
             setStatus('error');
             setMessage('Network error. Please check your connection and try again.');
         }

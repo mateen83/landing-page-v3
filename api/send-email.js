@@ -22,14 +22,29 @@ export default async function handler(req, res) {
   try {
     const { email } = req.body;
 
+    // Log for debugging
+    console.log('Received email submission:', email);
+    console.log('Environment variables check:', {
+      hasGmailUser: !!process.env.GMAIL_USER,
+      hasClientId: !!process.env.GMAIL_CLIENT_ID,
+      hasClientSecret: !!process.env.GMAIL_CLIENT_SECRET,
+      hasRefreshToken: !!process.env.GMAIL_REFRESH_TOKEN
+    });
+
     if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+      return res.status(400).json({ message: 'Email is required', success: false });
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: 'Invalid email format', success: false });
+    }
+
+    // Check if all environment variables are present
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET || !process.env.GMAIL_REFRESH_TOKEN) {
+      console.error('Missing environment variables');
+      return res.status(500).json({ message: 'Server configuration error', success: false });
     }
 
     // Create OAuth2 client
@@ -44,10 +59,12 @@ export default async function handler(req, res) {
     });
 
     // Get access token
+    console.log('Getting access token...');
     const accessToken = await oauth2Client.getAccessToken();
+    console.log('Access token obtained successfully');
 
     // Create transporter
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         type: 'OAuth2',
@@ -96,7 +113,9 @@ export default async function handler(req, res) {
     };
 
     // Send email
-    await transporter.sendMail(mailOptions);
+    console.log('Sending email...');
+    const result = await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully:', result.messageId);
 
     res.status(200).json({ 
       message: 'Email sent successfully!',
