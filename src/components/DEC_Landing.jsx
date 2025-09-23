@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Sparkles, HeartHandshake, Users2, CalendarDays } from "lucide-react";
+import { Sparkles, HeartHandshake, Users2, CalendarDays, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 const SIGN_UP_URL = "https://www.skool.com/divinecollective/about"; // TODO: your Skool invite / checkout link
 const LEARN_MORE_URL = "#"; // TODO: your long-form About/FAQ link
@@ -133,35 +134,7 @@ export default function DEC_Landing() {
             </section>
 
             {/* EMAIL CAPTURE */}
-            <section className="px-6 pb-20">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    viewport={{ once: true }}
-                    className="mx-auto max-w-4xl rounded-3xl border border-white/15 bg-white/5 p-6 sm:p-8 lg:p-10 backdrop-blur-sm"
-                >
-                    <h3 className="text-xl sm:text-2xl font-semibold text-center">Get updates & early invites</h3>
-                    <p className="mt-3 text-center text-white/70 text-base sm:text-lg max-w-2xl mx-auto">Drop your email to receive upcoming classes, circles, and member offers.</p>
-                    <form className="mt-8 flex flex-col lg:flex-row gap-4 max-w-2xl mx-auto" onSubmit={(e) => e.preventDefault()}>
-                        <input
-                            type="email"
-                            required
-                            placeholder="you@example.com"
-                            className="flex-1 rounded-xl bg-white/95 text-gray-900 px-5 py-4 text-base outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-yellow-300 transition-all duration-200 shadow-sm"
-                        />
-                        <motion.button
-                            whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
-                            whileTap={{ scale: 0.98 }}
-                            className="lg:flex-shrink-0 rounded-xl px-8 py-4 bg-white text-gray-900 font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-base"
-
-                        >
-                            Notify Me
-                        </motion.button>
-                    </form>
-                    <p className="mt-4 text-xs text-white/60 text-center">We respect your privacy. Unsubscribe anytime.</p>
-                </motion.div>
-            </section>
+            <EmailCaptureSection />
 
             <Footer />
         </main>
@@ -347,6 +320,122 @@ function Footer() {
                 © {new Date().getFullYear()} Divine Energy Collective. All rights reserved.
             </div>
         </motion.footer>
+    );
+}
+
+function EmailCaptureSection() {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [message, setMessage] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!email) {
+            setStatus('error');
+            setMessage('Please enter your email address');
+            return;
+        }
+
+        setStatus('loading');
+        setMessage('');
+
+        try {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                setStatus('success');
+                setMessage('Thank you! We\'ll keep you updated on upcoming classes and events.');
+                setEmail('');
+            } else {
+                setStatus('error');
+                setMessage(data.message || 'Something went wrong. Please try again.');
+            }
+        } catch (error) {
+            setStatus('error');
+            setMessage('Network error. Please check your connection and try again.');
+        }
+
+        // Reset status after 5 seconds
+        setTimeout(() => {
+            setStatus('idle');
+            setMessage('');
+        }, 5000);
+    };
+
+    return (
+        <section className="px-6 pb-20">
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="mx-auto max-w-4xl rounded-3xl border border-white/15 bg-white/5 p-6 sm:p-8 lg:p-10 backdrop-blur-sm"
+            >
+                <h3 className="text-xl sm:text-2xl font-semibold text-center">Get updates & early invites</h3>
+                <p className="mt-3 text-center text-white/70 text-base sm:text-lg max-w-2xl mx-auto">
+                    Drop your email to receive upcoming classes, circles, and member offers.
+                </p>
+                
+                <form className="mt-8 flex flex-col lg:flex-row gap-4 max-w-2xl mx-auto" onSubmit={handleSubmit}>
+                    <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        disabled={status === 'loading'}
+                        className="flex-1 rounded-xl bg-white/95 text-gray-900 px-5 py-4 text-base outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-yellow-300 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <motion.button
+                        type="submit"
+                        disabled={status === 'loading'}
+                        whileHover={status !== 'loading' ? { scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" } : {}}
+                        whileTap={status !== 'loading' ? { scale: 0.98 } : {}}
+                        className="lg:flex-shrink-0 rounded-xl px-8 py-4 bg-white text-gray-900 font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {status === 'loading' ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Sending...
+                            </>
+                        ) : (
+                            'Notify Me'
+                        )}
+                    </motion.button>
+                </form>
+
+                {/* Status Messages */}
+                {message && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`mt-4 flex items-center justify-center gap-2 text-sm ${
+                            status === 'success' ? 'text-green-400' : 'text-red-400'
+                        }`}
+                    >
+                        {status === 'success' ? (
+                            <CheckCircle className="h-4 w-4" />
+                        ) : (
+                            <AlertCircle className="h-4 w-4" />
+                        )}
+                        {message}
+                    </motion.div>
+                )}
+
+                <p className="mt-4 text-xs text-white/60 text-center">
+                    We respect your privacy. Unsubscribe anytime.
+                </p>
+            </motion.div>
+        </section>
     );
 }
 
