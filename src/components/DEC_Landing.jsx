@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Sparkles, HeartHandshake, Users2, CalendarDays } from "lucide-react";
 
-const SIGN_UP_URL = "#"; // TODO: your Skool invite / checkout link
+const SIGN_UP_URL = "https://www.skool.com/divinecollective/about?ref=8d203f6953cb449c8b273260ed2914f0"; // TODO: your Skool invite / checkout link
 const LEARN_MORE_URL = "#"; // TODO: your long-form About/FAQ link
-const LOGO_URL = ""; // e.g. https://cdn.yoursite.com/dec-logo-transparent.png
+const LOGO_URL = "https://divinenrg.com/wp-content/uploads/2025/09/DEC-logo-png-e1758533594612.png"; // e.g. https://cdn.yoursite.com/dec-logo-transparent.png
 
 export default function DEC_Landing() {
   return (
@@ -150,6 +150,7 @@ export default function DEC_Landing() {
               whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
               whileTap={{ scale: 0.98 }}
               className="lg:flex-shrink-0 rounded-xl px-8 py-4 bg-white text-gray-900 font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-base"
+              
             >
               Notify Me
             </motion.button>
