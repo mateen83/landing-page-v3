@@ -80,20 +80,20 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: process.env.GMAIL_USER, // Send to yourself
-      subject: '🌟 New Divine Energy Collective Signup!',
+      subject: 'New Divine Energy Collective Signup!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #FFD700; margin: 0; font-size: 28px;">✨ Divine Energy Collective ✨</h1>
+            <h1 style="color: #FFD700; margin: 0; font-size: 28px;">Divine Energy Collective</h1>
             <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">New Member Interest</p>
           </div>
           
           <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 8px; backdrop-filter: blur(10px);">
-            <h2 style="color: #FFD700; margin-top: 0; font-size: 20px;">📧 New Email Signup</h2>
+            <h2 style="color: #FFD700; margin-top: 0; font-size: 20px;">New Email Signup</h2>
             <p style="font-size: 18px; margin: 15px 0;"><strong>Email:</strong> ${email}</p>
             <p style="font-size: 14px; opacity: 0.8; margin: 20px 0 0 0;">
-              <strong>Timestamp:</strong> ${new Date().toLocaleString('en-US', { 
-                timeZone: 'America/New_York',
+              <strong>Timestamp:</strong> ${new Date().toLocaleString('en-PK', { 
+    timeZone: 'Asia/Karachi',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
